@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -13,10 +13,17 @@ type ProfileValidation = {
   password: boolean;
 };
 
+interface ErrorMessage {
+  display: string;
+}
+
 const UserProfileForm = styled.form`
   width: 80%;
   padding: 0 30px;
   margin: 0 auto;
+  div {
+    margin-bottom: 20px;
+  }
   input {
     display: block;
     width: 100%;
@@ -25,13 +32,19 @@ const UserProfileForm = styled.form`
     padding: 5px 20px;
     font-size: 1.3rem;
     border: 1px solid black;
-    margin-bottom: 20px;
+    margin-bottom: 4px;
   }
   button[type="submit"] {
     width: 100%;
     font-size: 1.3rem;
     margin-top: 20px;
   }
+`;
+
+const ErrorMessage = styled.label<{ display: string }>`
+  display: ${(props) => props.display};
+  color: red;
+  text-align: left;
 `;
 
 const SignUp = () => {
@@ -50,17 +63,20 @@ const SignUp = () => {
 
   const navigate = useNavigate();
 
-  //유효성검사
-  const isAvailable = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const inputHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setProfile({ ...profile, [name]: value });
+  };
 
-    if (name === "email") {
-      emailRegex.test(value)
+  //유효성검사
+  const isAvailable = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(validation);
+    if (e.target.name === "email") {
+      emailRegex.test(profile.email)
         ? setValidation({ ...validation, email: true })
         : setValidation({ ...validation, email: false });
-    } else if (name === "password") {
-      passwordRegex.test(value)
+    } else if (e.target.name === "password") {
+      passwordRegex.test(profile.password)
         ? setValidation({ ...validation, password: true })
         : setValidation({ ...validation, password: false });
     }
@@ -82,28 +98,49 @@ const SignUp = () => {
       });
   };
 
+  useEffect(() => console.log(validation), [validation]);
   return (
     <>
       <h2>회원가입</h2>
       <UserProfileForm onSubmit={submitSignupForm}>
-        <input
-          data-testid="email-input"
-          type={"email"}
-          id={"email"}
-          name={"email"}
-          placeholder={"이메일을 입력해주세요"}
-          required={true}
-          onChange={isAvailable}
-        ></input>
-        <input
-          data-testid="password-input"
-          type={"password"}
-          id={"password"}
-          name={"password"}
-          placeholder={"비밀번호를 입력해주세요"}
-          required={true}
-          onChange={isAvailable}
-        ></input>
+        <div>
+          <input
+            data-testid="email-input"
+            type={"email"}
+            id={"email"}
+            name={"email"}
+            placeholder={"이메일을 입력해주세요"}
+            required={true}
+            onChange={inputHandler}
+            onBlur={isAvailable}
+          ></input>
+          {validation.email ? (
+            <ErrorMessage display="none" />
+          ) : (
+            <ErrorMessage display="block">
+              "이메일 양식에 맞게 작성해 주세요"
+            </ErrorMessage>
+          )}
+        </div>
+        <div>
+          <input
+            data-testid="password-input"
+            type={"password"}
+            id={"password"}
+            name={"password"}
+            placeholder={"비밀번호를 입력해주세요"}
+            required={true}
+            onChange={inputHandler}
+            onBlur={isAvailable}
+          ></input>
+          {validation.password ? (
+            <ErrorMessage display="none" />
+          ) : (
+            <ErrorMessage display="block">
+              "비밀번호는 최소 8자 이상이어야 합니다"
+            </ErrorMessage>
+          )}
+        </div>
         <Link to="/login">계정이 있다면? 로그인</Link>
         <button
           data-testid="signup-button"
