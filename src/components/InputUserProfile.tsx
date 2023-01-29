@@ -94,9 +94,12 @@ const InputUserProfile = ({ location, attr }: InputUserProfileProps) => {
       .post(`/auth/${attr}`, profile)
       .then((res) => {
         console.log(res);
-        if (res.status === 200 && res.statusText === "Created") {
+        if (res.status === 201 && res.statusText === "Created") {
           window.confirm("회원가입이 완료되었습니다. 로그인 하시겠습니까?") &&
             navigate(`/${location}`);
+        } else if (res.status === 200) {
+          localStorage.setItem("access_token", res.data.access_token);
+          navigate(`/${location}`);
         }
       })
       .catch((err) => {
