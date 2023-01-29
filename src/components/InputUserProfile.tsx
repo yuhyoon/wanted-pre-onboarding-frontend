@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import instance from "../api/instance";
 
 type ProfileType = {
   email: string;
@@ -89,11 +90,11 @@ const InputUserProfile = ({ location, attr }: InputUserProfileProps) => {
 
   const submitSignupForm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    axios
-      .post("/users/create", profile)
+    instance
+      .post(`/auth/${attr}`, profile)
       .then((res) => {
         console.log(res);
-        if (res.statusText === "Created") {
+        if (res.status === 200 && res.statusText === "Created") {
           window.confirm("회원가입이 완료되었습니다. 로그인 하시겠습니까?") &&
             navigate(`/${location}`);
         }
