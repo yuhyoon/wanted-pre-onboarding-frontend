@@ -1,30 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import SignUp from "./page/SignUp";
 import SignIn from "./page/SignIn";
 import Todos from "./page/Todos";
 
-import AuthWrapper from "./components/AuthWrapper";
-
 function App() {
-  const isAuthenticated = () => {
-    const TOKEN_KEY = localStorage.getItem("access_token");
+  const TOKEN_KEY = localStorage.getItem("access_token");
 
-    if (typeof TOKEN_KEY === "string" && TOKEN_KEY.length > 0) {
-      return true;
-    } else {
-      return false;
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handlePathname = (token: string | null, pathname: string) => {
+    if (token) {
+      if (pathname === "/signup" || pathname === "/signin")
+        return navigate("todo");
+    } else if (!token && pathname === "/todo") {
+      return navigate("signin");
     }
   };
+
+  useEffect(() => {
+    handlePathname(TOKEN_KEY, location.pathname);
+  }, [location]);
+
   return (
     <div className="App">
       <Routes>
-        <Route element={<AuthWrapper isAuthenticated={isAuthenticated} />}>
-          <Route path="/signup" element={<SignUp />}></Route>
-          <Route path="/signin" element={<SignIn />}></Route>
-        </Route>
+        <Route path="/signup" element={<SignUp />}></Route>
+        <Route path="/signin" element={<SignIn />}></Route>
+
         <Route path="/todo" element={<Todos />}></Route>
       </Routes>
     </div>
